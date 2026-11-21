@@ -1,0 +1,10 @@
+project_id = "kenya-potato-farmers-marketplace"
+
+[functions.mpesa-callback]
+verify_jwt = false
+
+[functions.payout-callback]
+verify_jwt = false
+
+[functions.refund-callback]
+verify_jwt = false
