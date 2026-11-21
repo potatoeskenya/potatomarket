@@ -1,0 +1,10 @@
+{
+  "name": "Kenya Potato Farmers Marketplace",
+  "short_name": "Kenya Potato Market",
+  "start_url": "/potatomarket/",
+  "scope": "/potatomarket/",
+  "display": "standalone",
+  "background_color": "#f7faf5",
+  "theme_color": "#164b35",
+  "icons": [{"src": "/potatomarket/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}]
+}
