@@ -1,0 +1,2 @@
+/* Compatibility stylesheet for environments expecting Style.css. */
+@import './styles.css';
