@@ -1,0 +1,13 @@
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS"};
+const contactPatterns=[/\b(?:\+?254|0)\s?7\d{2}[\s-]?\d{3}[\s-]?\d{3}\b/i,/\b(?:\+?254|0)\s?1\d{2}[\s-]?\d{3}[\s-]?\d{3}\b/i,/\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b/i,/\b(?:whats?app|call|text|sms)\s*(?:me|us)?\s*(?:on|at|:)?\s*(?:\+?254|0)\s?\d{9}\b/i,/\b(?:send|pay)\s+(?:directly|outside|off[- ]platform)\b/i];
+serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{headers:cors});if(req.method!=="POST")return new Response("Method not allowed",{status:405,headers:cors});try{
+ const auth=req.headers.get("Authorization");if(!auth)throw new Error("Authentication required");const url=Deno.env.get("SUPABASE_URL")!,service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,anon=Deno.env.get("SUPABASE_ANON_KEY")!;
+ const caller=createClient(url,anon,{global:{headers:{Authorization:auth}}});const {data:{user},error}=await caller.auth.getUser();if(error||!user)throw new Error("Invalid session");
+ const {conversation_id,body}=await req.json();if(typeof body!=="string"||!body.trim()||body.length>4000)throw new Error("Message must contain 1–4000 characters");
+ const admin=createClient(url,service);const {data:c}=await admin.from("conversations").select("*").eq("id",conversation_id).single();if(!c||![c.buyer_id,c.seller_id].includes(user.id))throw new Error("Conversation not found");
+ const match=contactPatterns.some(p=>p.test(body));if(match){await admin.from("message_moderation_events").insert({conversation_id,user_id:user.id,message_excerpt:body.slice(0,180),reason:"Possible contact exchange or off-platform transaction",severity:"review",action_taken:"message_blocked_warning"});return new Response(JSON.stringify({ok:false,blocked:true,message:"This message may share contact details or move payment off-platform. Please keep communication and payment here. Repeated intentional attempts may lead to account review."}),{status:200,headers:{...cors,"Content-Type":"application/json"}})}
+ const {error:insertError}=await admin.from("messages").insert({conversation_id,sender_id:user.id,body:body.trim(),moderation_status:"clear"});if(insertError)throw insertError;
+ return new Response(JSON.stringify({ok:true,message:"Message sent"}),{headers:{...cors,"Content-Type":"application/json"}});
+ }catch(e){return new Response(JSON.stringify({error:e.message||"Message could not be sent"}),{status:400,headers:{...cors,"Content-Type":"application/json"}})}});
