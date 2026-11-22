@@ -5,7 +5,9 @@ A national potato trading and farmer-community application for all 47 counties. 
 ## Product decisions
 - Free registration for buyers, sellers, dual-role members and transporters.
 - National coverage: all 47 Kenyan counties.
-- Platform commission: 5%, calculated server-side when an order is created.
+- Platform commission: 2%, calculated server-side when an order is created.
+- Farmer registration: free.
+- Additional revenue: buyer/seller subscriptions and paid featured listings (payment activation requires the monetization Edge Functions and M-Pesa verification workflow).
 - Seller payout: queued only after the buyer confirms receipt.
 - M-Pesa collection through Daraja STK Push.
 - Seller disbursement through a separately approved B2C/PSP adapter.
@@ -31,8 +33,9 @@ Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env`. Only the Supabas
 
 1. Create a new Supabase project dedicated to this marketplace.
 2. Open SQL Editor and run the migrations in order:
-   - `supabase/migrations/202611210001_initial_marketplace.sql`
-   - `supabase/migrations/202611210002_marketplace_operations.sql`
+   - `supabase/migration/202611210001_initial_marketplace.sql`
+   - `supabase/migration/202611210002_marketplace_operations.sql`
+   - `supabase/migration/202611220001_monetization.sql`
 3. Deploy the private `certification-documents` storage bucket policies from the second migration.
 4. Enable email verification and configure the allowed redirect URLs in Supabase Auth.
 5. Add the frontend environment variables to your hosting provider.
@@ -121,7 +124,7 @@ Run:
 npm test
 ```
 
-The current Node test suite checks key security invariants: no public admin signup, message moderation-only inserts, callback reconciliation/idempotency, buyer-confirmation payout gates, refund approval gates and the 5% commission rule. These are regression tests, not a substitute for full end-to-end tests against a Supabase staging project and Safaricom sandbox.
+The current Node test suite checks key security invariants: no public admin signup, message moderation-only inserts, callback reconciliation/idempotency, buyer-confirmation payout gates, refund approval gates and the 2% commission rule. These are regression tests, not a substitute for full end-to-end tests against a Supabase staging project and Safaricom sandbox.
 
 Before launch, also test: registration and email verification; RLS as buyer/seller/transporter/admin; product creation; order stock locking; duplicate STK attempts; success/failure/cancelled callbacks; provider query reconciliation; delivery state transitions; payout callback success/failure; refund reversal; certificate file access; and backup/restore.
 

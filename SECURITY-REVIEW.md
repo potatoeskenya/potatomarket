@@ -5,7 +5,7 @@
 - Profile trigger blocks self-service role, verification and reputation changes.
 - Seller ratings are derived from transaction-linked reviews; seller leaderboard uses these aggregates and completed-order metrics.
 - Product certification fields are reset for non-admin writes; certification evidence is stored in a private bucket.
-- Orders are created by a server-side RPC that locks product stock and calculates the fixed 5% commission.
+- Orders are created by a server-side RPC that locks product stock and calculates the fixed 2% commission.
 - Clients cannot directly update order/payment/payout financial states.
 - STK Push callback requires a separate callback token and independent provider query before payment success is recorded.
 - Pending STK payment retries are blocked to prevent duplicate prompts.

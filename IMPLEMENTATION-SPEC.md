@@ -3,7 +3,7 @@
 ## Product configuration
 - Name: Kenya Potato Farmers Marketplace
 - Scope: all 47 counties in Kenya
-- Commission: 5% per successful sale, calculated in PostgreSQL
+- Commission: 2% per successful sale, calculated in PostgreSQL
 - Registration: buyer, seller, buyer-and-seller, transporter
 - Administrator: provisioned manually by a trusted owner
 - Payout trigger: buyer receipt confirmation after dispatch/delivery
@@ -26,7 +26,7 @@
 - View orders and mark dispatch through a server-validated state transition.
 - Chat with buyers through the moderation function.
 - Save a seller M-Pesa payout number for administrator verification.
-- View payout status and net proceeds after the 5% commission.
+- View payout status and net proceeds after the 2% commission.
 
 ### Transporter
 - Register vehicle, load capacity, county, route and indicative price.
@@ -55,7 +55,7 @@ The first migration creates core identities, products, seed certifications, orde
 The second migration adds transporters, deliveries, refund requests, moderation events and payout-provider events. It hardens public signup and profile role changes, prevents reputation self-editing, restricts message inserts to the moderation Edge Function, ties reviews and certification submissions to the correct order/listing, and constrains refund and delivery inserts.
 
 ## Transaction lifecycle
-1. `create_marketplace_order` locks stock, snapshots price and computes the 5% commission.
+1. `create_marketplace_order` locks stock, snapshots price and computes the 2% commission.
 2. Buyer calls `create-payment`; duplicate pending payment prompts are rejected.
 3. Daraja callback is authenticated with a separate random callback token and independently queried through STK Push Query.
 4. Only reconciled payment success changes payment to `succeeded` and order to `paid`.
@@ -89,3 +89,11 @@ All message writes must pass through `moderate-message`. Direct participant inse
 
 ## External dependencies still required
 This repository cannot activate live payments without the user's own Supabase project, Safaricom credentials, callback deployment, provider-approved safeguarded funds flow, B2C/reversal approval and verified merchant onboarding. Those account-specific secrets must be supplied by the platform owner and must not be embedded in the ZIP.
+
+
+## Monetization update (2026-11-22)
+- Farmer registration remains free.
+- Commission is 2%, calculated and snapshotted in PostgreSQL when an order is created.
+- Subscription plans and user entitlements are stored in `subscription_plans` and `user_subscriptions`.
+- Featured listing purchase requests are stored in `featured_listing_purchases`; only trusted server functions should mark payments paid and activate featured placement.
+- The migration does not claim that subscriptions or featured listings can already collect money: M-Pesa billing Edge Functions and callback verification must be completed and deployed before selling these services.
